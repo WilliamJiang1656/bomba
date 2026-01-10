@@ -1,30 +1,38 @@
 from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# test route for HTTP
+# Optional CORS for testing
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+players = []
+
 @app.get("/")
 def root():
-    print("Root hit", flush=True)
-    return {"status": "Daijoubu"}
+    print("Root endpoint hit", flush=True)
+    return {"status": "Server running"}
 
-# WebSocket for GameMaker
 @app.websocket("/")
 async def websocket_endpoint(ws: WebSocket):
-    await ws.accept()  # accept connection
-    await ws.send_text("connected among us")  # confirm connection
-    print("Player connected cracked", flush=True)
-
-    players = []
+    await ws.accept()
+    print("Player connected", flush=True)
+    await ws.send_text("connected")
 
     players.append(ws)
     try:
         while True:
-            data = await ws.receive_text()  # wait for message
+            data = await ws.receive_text()
             print("Received:", data, flush=True)
-            # broadcast to all players
+            # Broadcast to all connected players
             for p in players:
                 await p.send_text(data)
     except:
         players.remove(ws)
-        print("Player disconnected rip", flush=True)
+        print("Player disconnected", flush=True)
