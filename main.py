@@ -8,7 +8,11 @@ def root():
 
 players = []
 
-@app.websocket("/ws")
+@app.websocket("/")
+async def websocket_endpoint(ws: WebSocket):
+    await ws.accept()
+    await ws.send_text("connected 🌚")  # confirm connection
+
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     players.append(ws)
