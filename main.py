@@ -60,9 +60,10 @@ async def websocket_endpoint(websocket: WebSocket):
                     
                     # Check if ALL active players are ready
                     active_seats = [s for s in seats if s["active"]]
-                    all_ready = all(s["ready"] for s in active_seats) and len(active_seats) >= 3
+                    num_active = len(active_seats)
                     
-                    if all_ready:
+                    # ONLY start if there are exactly 5 people AND they are all ready
+                    if num_active == 5 and all(s["ready"] for s in active_seats):
                         start_packet = {"header": "START_GAME"}
                         start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
                         for seat in seats:
