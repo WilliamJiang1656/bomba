@@ -15,7 +15,16 @@ async def websocket_endpoint(websocket: WebSocket):
     
     player_id = len(players)
     print(f"Player {player_id} joined the lobby!")
-
+    
+    # Send the "Welcome" packet to ONLY this new player
+    welcome_data = {
+        "header": "WELCOME",
+        "assigned_id": player_id
+    }
+    # We use send_text here, but GameMaker will read it via the buffer
+    await websocket.send_text(json.dumps(welcome_data))
+    
+    print(f"Player {player_id} connected and received their ID.")
     try:
         while True:
             data = await websocket.receive_bytes()
