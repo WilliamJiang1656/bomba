@@ -7,18 +7,18 @@ app = FastAPI()
 
 # Only use SEATS. This keeps ID 0, 1, and 2 assigned to specific 'spots'.
 seats = [
-    {"socket": None, "active": False},
-    {"socket": None, "active": False},
-    {"socket": None, "active": False},
-    {"socket": None, "active": False},
-    {"socket": None, "active": False}
+    {"socket": None, "active": False, "ready": False},
+    {"socket": None, "active": False, "ready": False},
+    {"socket": None, "active": False, "ready": False},
+    {"socket": None, "active": False, "ready": False},
+    {"socket": None, "active": False, "ready": False}
 ]
 
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
-    # 1. FIND A SEAT
+    # find a seat
     assigned_id = -1
     for i, seat in enumerate(seats):
         if not seat["active"]:
@@ -33,14 +33,30 @@ async def websocket_endpoint(websocket: WebSocket):
 
     print(f"Seat {assigned_id} taken.")
 
-    # 2. WELCOME
+    # welcome data
     welcome_data = {"header": "WELCOME", "assigned_id": assigned_id}
-    await websocket.send_text(json.dumps(welcome_data))
+
+    payload = (json.dumps(welcome_data) + "\0").encode("utf-8")
+    await websocket.send_bytes(payload)
     
     try:
         while True:
             raw_data = await websocket.receive_bytes()
             clean_str = raw_data.decode("utf-8").rstrip('\x00')
+
+            if msg_dict["header"] == "READY":
+                seats[assigned_id]["ready"] = msg_dict["is_ready"] # True or False
+                
+                # Check if ALL active players are ready
+                active_seats = [s for s in seats if s["active"]]
+                all_ready = all(s["ready"] for s in active_seats) and len(active_seats) >= 3
+                
+                if all_ready:
+                    # Broadcast a "START_GAME" header to everyone
+                    start_packet = {"header": "START_GAME"}
+                    for seat in seats:
+                    if seat["active"] and seat["socket"]:
+                        await seat["socket"].send_bytes(start_packet)
         
             try:
                 msg_dict = json.loads(clean_str)
