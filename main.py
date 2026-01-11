@@ -43,21 +43,7 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             raw_data = await websocket.receive_bytes()
             clean_str = raw_data.decode("utf-8").rstrip('\x00')
-
-            if msg_dict["header"] == "READY":
-                seats[assigned_id]["ready"] = msg_dict["is_ready"] # True or False
-                
-                # Check if ALL active players are ready
-                active_seats = [s for s in seats if s["active"]]
-                all_ready = all(s["ready"] for s in active_seats) and len(active_seats) >= 3
-                
-                if all_ready:
-                    # Broadcast a "START_GAME" header to everyone
-                    start_packet = {"header": "START_GAME"}
-                    for seat in seats:
-                    if seat["active"] and seat["socket"]:
-                        await seat["socket"].send_bytes(start_packet)
-        
+            
             try:
                 msg_dict = json.loads(clean_str)
                 # Use the assigned_id we locked in at the start!
@@ -68,6 +54,20 @@ async def websocket_endpoint(websocket: WebSocket):
                 for seat in seats:
                     if seat["active"] and seat["socket"]:
                         await seat["socket"].send_bytes(final_json)
+
+                if msg_dict["header"] == "READY":
+                    seats[assigned_id]["ready"] = msg_dict["is_ready"] # True or False
+                    
+                    # Check if ALL active players are ready
+                    active_seats = [s for s in seats if s["active"]]
+                    all_ready = all(s["ready"] for s in active_seats) and len(active_seats) >= 3
+                    
+                    if all_ready:
+                        start_packet = {"header": "START_GAME"}
+                        start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
+                        for seat in seats:
+                            if seat["active"] and seat["socket"]:
+                                await seat["socket"].send_bytes(start_payload)
                         
             except json.JSONDecodeError:
                 pass
