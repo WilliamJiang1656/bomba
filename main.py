@@ -16,21 +16,27 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return {"status": "online", "message": "Bomba Server is Running"}
-
+    
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     print("GameMaker Connected via WebSocket!")
     try:
         while True:
-            # Receive text from GameMaker
-            data = await websocket.receive_text()
-            print(f"Message received: {data}")
+            # Change this from receive_text() to receive_bytes()
+            data = await websocket.receive_bytes()
             
-            # Send it back to confirm
-            await websocket.send_text(f"Echo: {data}")
+            # Convert the bytes back to a string so we can read it
+            message_text = data.decode("utf-8")
+            print(f"Binary Message received: {message_text}")
+            
+            # Send an echo back as text
+            await websocket.send_text(f"Echo: {message_text}")
+            
     except WebSocketDisconnect:
         print("GameMaker Disconnected")
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
