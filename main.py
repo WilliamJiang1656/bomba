@@ -11,7 +11,7 @@ players = []
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    connected_friends.append(websocket)
+    players.append(websocket)
     
     player_id = len(players)
     print(f"Player {player_id} joined the lobby!")
