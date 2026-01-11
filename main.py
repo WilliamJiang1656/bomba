@@ -18,13 +18,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            # Receive whatever JSON data your GameMaker sends
             data = await websocket.receive_bytes()
-            
-            # THE RELAY: Loop through every connected friend and send them the data
+        
+            # Strip the null terminator \x00 if it exists
+            clean_data = data.decode("utf-8").rstrip('\x00')
+        
+            # Relay the clean data to everyone
             for player in players:
-                # We send it to everyone (even the sender, so they get confirmation)
-                await player.send_bytes(data)
+                    await player.send_bytes(clean_data.encode("utf-8"))
                 
     except WebSocketDisconnect:
         players.remove(websocket)
