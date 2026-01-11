@@ -1,42 +1,34 @@
 import os
 import uvicorn
+import json
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# This helps prevent Railway from rejecting the connection
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Just a list to keep track of everyone's connection
+connected_friends = []
 
-@app.get("/")
-def health_check():
-    return {"status": "online", "message": "Bomba Server is Running"}
-    
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    print("GameMaker Connected via WebSocket!")
+    connected_friends.append(websocket)
+    
+    player_id = len(connected_friends)
+    print(f"Friend {player_id} joined the lobby!")
+
     try:
         while True:
-            # Change this from receive_text() to receive_bytes()
+            # Receive whatever JSON data your GameMaker sends
             data = await websocket.receive_bytes()
             
-            # Convert the bytes back to a string so we can read it
-            message_text = data.decode("utf-8")
-            print(f"Binary Message received: {message_text}")
-            
-            # Send an echo back as text
-            await websocket.send_text(f"Echo: {message_text}")
-            
+            # THE RELAY: Loop through every connected friend and send them the data
+            for friend in connected_friends:
+                # We send it to everyone (even the sender, so they get confirmation)
+                await friend.send_bytes(data)
+                
     except WebSocketDisconnect:
-        print("GameMaker Disconnected")
-    except Exception as e:
-        print(f"Error: {e}")
+        connected_friends.remove(websocket)
+        print(f"A friend disconnected.")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
