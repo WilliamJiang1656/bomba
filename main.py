@@ -1,6 +1,7 @@
 import os
 import uvicorn
 import json
+import random
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 app = FastAPI()
@@ -65,11 +66,49 @@ async def websocket_endpoint(websocket: WebSocket):
                     # ONLY start if there are exactly 5 people AND they are all ready
                     if num_active == 5 and all(s["ready"] for s in active_seats):
                         start_packet = {"header": "START_GAME"}
-                        start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
-                        for seat in seats:
-                            if seat["active"] and seat["socket"]:
-                                await seat["socket"].send_bytes(start_payload)
                         
+                        # make deck
+                        deck = [] 
+                        # Standard Cards
+                        for val in range(13): # 0-12
+                            for suit in range(4): # 0-3
+                                for back in range(2): # 0-1
+                                    deck.append([val, suit, back])
+                        # Jokers
+                        for back in range(2):
+                            deck.append([13, 0, back]) # Black Joker
+                            deck.append([14, 2, back]) # Red Joker
+                            
+                        random.shuffle(deck)
+
+                        flip_card = deck[random.randrange(len(deck))]
+                        while(flip_card[0] > 9): # queen
+                            flip_card = deck[random.randrange(len(deck))]
+                        start_packet["flip_card"] = flip_card
+                        
+                        #distribute
+                        hands = [[] for _ in range(5)]
+                        for cards in range(21): # 21 cards
+                            for p in range(5): # 5 players
+                                hands[p].append(deck.pop())
+                        start_packet["bottom_cards"] = deck
+
+                        # find who got flip card
+                        flip_id = 0
+                        for p in range(5):
+                            if flip_card in hands[p]:
+                                flip_id = p
+                                break
+                        start_packet["flip_id"] = flip_id
+                        
+                        
+                        for p, seat in enumerate(seats):
+                            if seat["active"] and seat["socket"]:
+                                start_packet["hand"] = hands[p]
+                                start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
+                                await seat["socket"].send_bytes(start_payload)
+
+                            
             except json.JSONDecodeError:
                 pass
 
