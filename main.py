@@ -81,9 +81,9 @@ async def websocket_endpoint(websocket: WebSocket):
                             
                         random.shuffle(deck)
 
-                        flip_card = deck[random.randrange(len(deck))]
+                        flip_card = deck[random.randrange(len(deck)-3)]
                         while(flip_card[0] > 9): # queen
-                            flip_card = deck[random.randrange(len(deck))]
+                            flip_card = deck[random.randrange(len(deck)-3)]
                         start_packet["flip_card"] = flip_card
                         
                         #distribute
