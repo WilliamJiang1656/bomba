@@ -70,7 +70,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         # make deck
                         deck = [] 
                         # Standard Cards
-                        for val in range(13): # 0-12
+                        for val in range(3): # 0-12
                             for suit in range(4): # 0-3
                                 for back in range(2): # 0-1
                                     deck.append([val, suit, back])
@@ -88,7 +88,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         
                         #distribute
                         hands = [[] for _ in range(5)]
-                        for cards in range(21): # 21 cards
+                        for cards in range(len(deck) % 5): # 21 cards
                             for p in range(5): # 5 players
                                 hands[p].append(deck.pop())
                         start_packet["bottom_cards"] = deck
