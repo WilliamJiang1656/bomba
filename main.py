@@ -108,7 +108,7 @@ async def websocket_endpoint(websocket: WebSocket):
                                 start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
                                 await seat["socket"].send_bytes(start_payload)
                 
-                else if msg_dict["header"] == "EXIT":
+                elif msg_dict["header"] == "EXIT":
                     for p in range(5):
                         seats[p]["ready"] = false
 
