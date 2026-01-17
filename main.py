@@ -6,7 +6,6 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 app = FastAPI()
 
-# Only use SEATS. This keeps ID 0, 1, and 2 assigned to specific 'spots'.
 seats = [
     {"socket": None, "active": False, "ready": False},
     {"socket": None, "active": False, "ready": False},
@@ -51,7 +50,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 msg_dict["sender"] = assigned_id
                 final_json = (json.dumps(msg_dict) + "\0").encode("utf-8")
                 
-                # 3. BROADCAST only to active sockets
+                # broadcast to active sockets
                 for seat in seats:
                     if seat["active"] and seat["socket"]:
                         await seat["socket"].send_bytes(final_json)
@@ -64,7 +63,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     num_active = len(active_seats)
                     
                     # ONLY start if there are exactly 5 people AND they are all ready
-                    if all(s["ready"] for s in active_seats):
+                    if num_active == 5 and all(s["ready"] for s in active_seats):
                         start_packet = {"header": "START_GAME"}
                         
                         # make deck
