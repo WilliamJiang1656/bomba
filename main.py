@@ -110,6 +110,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 elif msg_dict["header"] == "EXIT":
                     for p in range(5):
                         seats[p]["ready"] = false
+                        
+                elif msg_dict["header"] == "PLAY_CARDS":
+                    p_id = msg_dict["sender"]   
+                    played_cards = msg_dict["cards"]   
+                    for played_card in len(played_cards):
+                        hand[p_id].remove(played_card)
 
                             
             except json.JSONDecodeError:
