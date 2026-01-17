@@ -88,7 +88,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         
                         #distribute
                         hands = [[] for _ in range(5)]
-                        for cards in range(10): # 21 cards
+                        for cards in range(21): # 21 cards
                             for p in range(5): # 5 players
                                 hands[p].append(deck.pop())
                         start_packet["bottom_cards"] = deck
@@ -107,6 +107,10 @@ async def websocket_endpoint(websocket: WebSocket):
                                 start_packet["hand"] = hands[p]
                                 start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
                                 await seat["socket"].send_bytes(start_payload)
+                
+                else if msg_dict["header"] == "EXIT":
+                    for p in range(5):
+                        seats[p]["ready"] = false
 
                             
             except json.JSONDecodeError:
