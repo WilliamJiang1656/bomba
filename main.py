@@ -71,6 +71,12 @@ async def websocket_endpoint(websocket: WebSocket):
                     # ONLY start if there are exactly 5 people AND they are all ready
                     if num_active == 5 and all(s["ready"] for s in active_seats):
                         start_packet = {"header": "START_GAME"}
+
+                        # reset vars
+                        hands = [[] for _ in range(5)]
+                        landlord_id = [[] for _ in range(2)]
+                        turn_id = -1
+                        played_cards = []
                         
                         # make deck
                         deck = [] 
