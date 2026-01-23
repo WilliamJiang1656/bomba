@@ -123,7 +123,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     p_id = msg_dict["sender"]   
                     played_cards = msg_dict["cards"]   
                     for card in played_cards:
-                        c_int = int(card) 
+                        c_int = [int(val) for val in card]
                         
                         if c_int in hands[p_id]:
                             hands[p_id].remove(c_int)
