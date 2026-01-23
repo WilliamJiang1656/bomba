@@ -106,7 +106,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         hands = [[] for _ in range(5)]
                         landlord_id = [[] for _ in range(2)]
                         turn_id = -1
+                        last_play_id = -1
                         played_cards = []
+                        table_combo = []
+                        exit_order = []
+                        landlord_points = 0
+                        peasant_points = 0
                         
                         # make deck
                         deck = [] 
