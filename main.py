@@ -23,6 +23,7 @@ table_combo = []
 exit_order = []
 landlord_points = 0
 peasant_points = 0
+bottom_cards = []
 start = False
 
 def skip_exited(val):
@@ -33,7 +34,7 @@ def skip_exited(val):
 
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
-    global hands, landlord_id, turn_id, last_play_id, played_cards, table_combo, exit_order, landlord_points, peasant_points, start
+    global hands, landlord_id, turn_id, last_play_id, played_cards, table_combo, exit_order, landlord_points, peasant_points, bottom_cards, start
     
     await websocket.accept()
     
@@ -70,6 +71,7 @@ async def websocket_endpoint(websocket: WebSocket):
         rejoin_data["exit_order"] = exit_order
         rejoin_data["landlord_points"] = landlord_points
         rejoin_data["peasant_points"] = peasant_points
+        rejoin_data["bottom_cards"] = bottom_cards
 
         
         payload = (json.dumps(rejoin_data) + "\0").encode("utf-8")
@@ -112,6 +114,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         exit_order = []
                         landlord_points = 0
                         peasant_points = 0
+                        bottom_cards = []
                         
                         # make deck
                         deck = [] 
@@ -138,6 +141,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             for p in range(5): # 5 players
                                 hands[p].append(deck.pop())
                         start_packet["bottom_cards"] = deck
+                        bottom_cards = deck
 
                         # find who got flip card
                         flip_id = 0
