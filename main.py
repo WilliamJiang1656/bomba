@@ -33,7 +33,7 @@ def skip_exited(val):
 
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
-    global hands, turn_id, table_combo, start, played_cards, last_play_id
+    global hands, landlord_id, turn_id, last_play_id, played_cards, table_combo, exit_order, landlord_points, peasant_points, start
     
     await websocket.accept()
     
