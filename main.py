@@ -48,7 +48,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 hands = [[] for _ in range(5)]
                 landlord_id = [[] for _ in range(2)]
                 turn_id = -1
-                last_played = []
+                played_cards = []
                 start = False
                 
                 msg_dict = json.loads(clean_str)
@@ -122,7 +122,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 elif msg_dict["header"] == "PLAY_CARDS":
                     p_id = msg_dict["sender"]   
                     played_cards = msg_dict["cards"]   
-                    for played_card in len(played_cards):
+                    for played_card in played_cards:
                         hand[p_id].remove(played_card)
 
 
