@@ -14,6 +14,12 @@ seats = [
     {"socket": None, "active": False, "ready": False}
 ]
 
+hands = [[] for _ in range(5)]
+landlord_id = [[] for _ in range(2)]
+turn_id = -1
+played_cards = []
+start = False
+
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -38,12 +44,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
     payload = (json.dumps(welcome_data) + "\0").encode("utf-8")
     await websocket.send_bytes(payload)
-
-    hands = [[] for _ in range(5)]
-    landlord_id = [[] for _ in range(2)]
-    turn_id = -1
-    played_cards = []
-    start = False
     
     try:
         while True:
