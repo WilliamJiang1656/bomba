@@ -45,6 +45,12 @@ async def websocket_endpoint(websocket: WebSocket):
             clean_str = raw_data.decode("utf-8").rstrip('\x00')
             
             try:
+                hands = [[] for _ in range(5)]
+                landlord_id = [[] for _ in range(2)]
+                turn_id = -1
+                last_played = []
+                start = False
+                
                 msg_dict = json.loads(clean_str)
                 # Use the assigned_id we locked in at the start!
                 msg_dict["sender"] = assigned_id
@@ -86,7 +92,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         start_packet["flip_card"] = flip_card
                         
                         #distribute
-                        hands = [[] for _ in range(5)]
+                        
                         for cards in range(21): # 21 cards
                             for p in range(5): # 5 players
                                 hands[p].append(deck.pop())
@@ -106,17 +112,19 @@ async def websocket_endpoint(websocket: WebSocket):
                                 start_packet["hand"] = hands[p]
                                 start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
                                 await seat["socket"].send_bytes(start_payload)
+                        start = True
                 
                 elif msg_dict["header"] == "LOBBY":
                     for p in range(5):
                         seats[p]["ready"] = False
-                '''        
+                    start = False
+      
                 elif msg_dict["header"] == "PLAY_CARDS":
                     p_id = msg_dict["sender"]   
                     played_cards = msg_dict["cards"]   
                     for played_card in len(played_cards):
                         hand[p_id].remove(played_card)
-                        '''
+
 
                             
             except json.JSONDecodeError:
