@@ -38,6 +38,12 @@ async def websocket_endpoint(websocket: WebSocket):
 
     payload = (json.dumps(welcome_data) + "\0").encode("utf-8")
     await websocket.send_bytes(payload)
+
+    hands = [[] for _ in range(5)]
+    landlord_id = [[] for _ in range(2)]
+    turn_id = -1
+    played_cards = []
+    start = False
     
     try:
         while True:
@@ -45,12 +51,6 @@ async def websocket_endpoint(websocket: WebSocket):
             clean_str = raw_data.decode("utf-8").rstrip('\x00')
             
             try:
-                hands = [[] for _ in range(5)]
-                landlord_id = [[] for _ in range(2)]
-                turn_id = -1
-                played_cards = []
-                start = False
-                
                 msg_dict = json.loads(clean_str)
                 # Use the assigned_id we locked in at the start!
                 msg_dict["sender"] = assigned_id
