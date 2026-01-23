@@ -17,11 +17,24 @@ seats = [
 hands = [[] for _ in range(5)]
 landlord_id = [[] for _ in range(2)]
 turn_id = -1
+last_play_id = -1
 played_cards = []
+table_combo = []
+exit_order = []
+landlord_points = 0
+peasant_points = 0
 start = False
+
+def skip_exited(val):
+    val = (val + 1) % 5
+    while val in exit_order:
+        val = (val + 1) % 5
+    return val
 
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
+    global hands, turn_id, table_combo, start, played_cards, last_play_id
+    
     await websocket.accept()
     
     # find a seat
@@ -40,10 +53,27 @@ async def websocket_endpoint(websocket: WebSocket):
     print(f"Seat {assigned_id} taken.")
 
     # welcome data
-    welcome_data = {"header": "WELCOME", "assigned_id": assigned_id}
+    welcome_data = {"header": "WELCOME", "assigned_id": assigned_id, "start": start}
 
     payload = (json.dumps(welcome_data) + "\0").encode("utf-8")
     await websocket.send_bytes(payload)
+
+    # if to send game data if a game is starting
+    if start:
+        rejoin_data = {"header": "REJOIN"}
+        rejoin_data["hand"] = hands[assigned_id]
+        rejoin_data["landlord"] = landlord_id
+        rejoin_data["turn"] = turn_id
+        rejoin_data["last_play_id"] = last_play_id
+        rejoin_data["played_cards"] = played_cards
+        rejoin_data["combo"] = table_combo
+        rejoin_data["exit_order"] = exit_order
+        rejoin_data["landlord_points"] = landlord_points
+        rejoin_data["peasant_points"] = peasant_points
+
+        
+        payload = (json.dumps(rejoin_data) + "\0").encode("utf-8")
+        await websocket.send_bytes(payload)
     
     try:
         while True:
@@ -120,15 +150,13 @@ async def websocket_endpoint(websocket: WebSocket):
                                 start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
                                 await seat["socket"].send_bytes(start_payload)
                         start = True
-                
-                elif msg_dict["header"] == "LOBBY":
-                    for p in range(5):
-                        seats[p]["ready"] = False
-                    start = False
-      
+
                 elif msg_dict["header"] == "PLAY_CARDS":
                     p = msg_dict["sender"]   
                     played_cards = msg_dict["cards"]   
+                    table_combo = msg_dict["combo"]
+                    turn_id = skip_exited(turn_id)
+                    last_played_id = p
                     for card in played_cards:
                         c_int = [int(val) for val in card]
                         
@@ -137,6 +165,33 @@ async def websocket_endpoint(websocket: WebSocket):
                         else:
                             print(f"Error: Card {c_int} not found in hand!")
                             print(hands[p])
+
+                elif msg_dict["header"] == "PASS":
+                    turn_id = skip_exited(turn_id)
+
+                elif msg_dict["header"] == "EXIT":
+                    p = msg_dict["sender"]
+                    exit_order.append(p)
+                    
+                    last_play_id = skip_exited(last_play_id);
+    
+                    if p in landlord_id:
+                        landlord_points += (5-len(exit_order));
+                    else:
+                        peasant_points += (5-len(exit_order));
+
+                elif msg_dict["header"] == "LANDLORD":
+                    landlord_id.append(msg_dict["sender"])
+
+                elif msg_dict["header"] == "FOUND_TEAMMATE":
+                    landlord_id.append(msg_dict["sender"])
+
+
+                elif msg_dict["header"] == "LOBBY":
+                    for p in range(5):
+                        seats[p]["ready"] = False
+                    start = False
+
 
 
                             
