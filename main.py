@@ -109,6 +109,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         
                         for p, seat in enumerate(seats):
                             if seat["active"] and seat["socket"]:
+                                hands[p].sort(key=lambda c: c[0])
                                 start_packet["hand"] = hands[p]
                                 start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
                                 await seat["socket"].send_bytes(start_payload)
@@ -120,15 +121,16 @@ async def websocket_endpoint(websocket: WebSocket):
                     start = False
       
                 elif msg_dict["header"] == "PLAY_CARDS":
-                    p_id = msg_dict["sender"]   
+                    p = msg_dict["sender"]   
                     played_cards = msg_dict["cards"]   
                     for card in played_cards:
                         c_int = [int(val) for val in card]
                         
-                        if c_int in hands[p_id]:
-                            hands[p_id].remove(c_int)
+                        if c_int in hands[p]:
+                            hands[p].remove(c_int)
                         else:
                             print(f"Error: Card {c_int} not found in hand!")
+                            print(hands[p])
 
 
                             
