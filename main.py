@@ -122,8 +122,13 @@ async def websocket_endpoint(websocket: WebSocket):
                 elif msg_dict["header"] == "PLAY_CARDS":
                     p_id = msg_dict["sender"]   
                     played_cards = msg_dict["cards"]   
-                    for played_card in played_cards:
-                        hands[p_id].remove(played_card)
+                    for card in played_cards:
+                        c_int = int(card) 
+                        
+                        if c_int in hands[p_id]:
+                            hands[p_id].remove(c_int)
+                        else:
+                            print(f"Error: Card {c_int} not found in hand!")
 
 
                             
