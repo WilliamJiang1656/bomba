@@ -191,6 +191,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 elif msg_dict["header"] == "LANDLORD":
                     landlord_id.append(msg_dict["sender"])
+                    turn_id = msg_dict["sender"]
 
                 elif msg_dict["header"] == "FOUND_TEAMMATE":
                     landlord_id.append(msg_dict["sender"])
