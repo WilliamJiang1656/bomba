@@ -20,7 +20,7 @@ landlord_id = []
 turn_id = -1
 last_play_id = -1
 played_cards = []
-table_combo = []
+table_combo = [0 for _ in range(4)]
 exit_order = []
 landlord_points = 0
 peasant_points = 0
@@ -115,7 +115,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         #turn_id = -1 set in start
                         last_play_id = -1
                         played_cards = []
-                        table_combo = []
+                        table_combo = [0 for _ in range(4)]
                         exit_order = []
                         landlord_points = 0
                         peasant_points = 0
