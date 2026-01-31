@@ -220,6 +220,8 @@ async def websocket_endpoint(websocket: WebSocket):
                                     teammate_packet = {"header": "FOUND_TEAMMATE", "sender": p}
                                     teammate_payload = (json.dumps(teammate_packet) + "\0").encode("utf-8")
                                     await seat["socket"].send_bytes(teammate_payload)
+                                landlord_id.append(p)
+                                landlord_phase = False
                                 break
                                 
 
