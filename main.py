@@ -24,6 +24,7 @@ exit_order = []
 landlord_points = 0
 peasant_points = 0
 bottom_cards = []
+landlord_phase = False
 start = False
 
 def skip_exited(val):
@@ -34,7 +35,7 @@ def skip_exited(val):
 
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
-    global hands, landlord_id, turn_id, last_play_id, played_cards, table_combo, exit_order, landlord_points, peasant_points, bottom_cards, start
+    global hands, landlord_id, turn_id, last_play_id, played_cards, table_combo, exit_order, landlord_points, peasant_points, bottom_cards, landlord_phase, start
     
     await websocket.accept()
     
@@ -72,6 +73,7 @@ async def websocket_endpoint(websocket: WebSocket):
         rejoin_data["landlord_points"] = landlord_points
         rejoin_data["peasant_points"] = peasant_points
         rejoin_data["bottom_cards"] = bottom_cards
+        rejoin_data["landlord_phase"] = landlord_phase
 
         
         payload = (json.dumps(rejoin_data) + "\0").encode("utf-8")
@@ -115,6 +117,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         landlord_points = 0
                         peasant_points = 0
                         bottom_cards = []
+                        landlord_phase = True
                         
                         # make deck
                         deck = [] 
@@ -195,6 +198,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 elif msg_dict["header"] == "FOUND_TEAMMATE":
                     landlord_id.append(msg_dict["sender"])
+                    landlord_phase = False
 
 
                 elif msg_dict["header"] == "LOBBY":
