@@ -206,6 +206,23 @@ async def websocket_endpoint(websocket: WebSocket):
                     hands[p].extend(bottom_cards)
                     hands[p].sort(key=lambda c: c[0])
 
+                elif msg_dict["header"] == "TEAMMATE":
+                    found = False
+                    for p, hand in enumerate(hands):
+                        if found:
+                            break
+                        elif p == msg_dict["sender"]:
+                            continue
+                        for card in hand[::-1]:
+                            if card == msg_dict["teammate"]:
+                                found = True
+                                for seat in seats:
+                                    teammate_packet = {"header": "FOUND_TEAMMATE", "sender": p}
+                                    teammate_payload = (json.dumps(teammate_packet) + "\0").encode("utf-8")
+                                    await seat["socket"].send_bytes(teammate_payload)
+                                break
+                                
+
                 elif msg_dict["header"] == "FOUND_TEAMMATE":
                     landlord_id.append(msg_dict["sender"])
                     landlord_phase = False
