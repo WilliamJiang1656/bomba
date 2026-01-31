@@ -199,6 +199,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 elif msg_dict["header"] == "LANDLORD":
                     p = msg_dict["sender"]
                     landlord_id.append(p)
+                    last_played_id = p
                     turn_id = msg_dict["sender"]
                     hands[p].extend(bottom_cards)
                     hands[p].sort(key=lambda c: c[0])
