@@ -201,7 +201,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     landlord_id.append(p)
                     turn_id = msg_dict["sender"]
                     hands[p].extend(bottom_cards)
-                    print(hands[p])
+                    hands[p].sort(key=lambda c: c[0])
 
                 elif msg_dict["header"] == "FOUND_TEAMMATE":
                     landlord_id.append(msg_dict["sender"])
