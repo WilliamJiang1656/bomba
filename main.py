@@ -15,6 +15,7 @@ seats = [
 ]
 
 hands = [[] for _ in range(5)]
+hand_groups = [[] for _ in range(5)]
 landlord_id = []
 turn_id = -1
 last_play_id = -1
@@ -64,6 +65,7 @@ async def websocket_endpoint(websocket: WebSocket):
     if start:
         rejoin_data = {"header": "REJOIN"}
         rejoin_data["hand"] = hands[assigned_id]
+        rejoin_data["hand_groups"] = hand_groups[assigned_id]
         rejoin_data["landlord"] = landlord_id
         rejoin_data["turn"] = turn_id
         rejoin_data["last_play_id"] = last_play_id
@@ -108,15 +110,16 @@ async def websocket_endpoint(websocket: WebSocket):
 
                         # reset vars
                         hands = [[] for _ in range(5)]
+                        hand_groups = [[] for _ in range(5)]
                         landlord_id = []
-                        turn_id = -1
+                        #turn_id = -1 set in start
                         last_play_id = -1
                         played_cards = []
                         table_combo = []
                         exit_order = []
                         landlord_points = 0
                         peasant_points = 0
-                        bottom_cards = []
+                        #bottom_cards = [] set in start
                         landlord_phase = True
                         
                         # make deck
@@ -153,6 +156,7 @@ async def websocket_endpoint(websocket: WebSocket):
                                 flip_id = p
                                 break
                         start_packet["flip_id"] = flip_id
+                        turn_id = flip_id
                         
                         
                         for p, seat in enumerate(seats):
