@@ -186,6 +186,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     turn_id = skip_exited(turn_id)
                     if turn_id == last_play_id:
                         table_combo = [0 for _ in range(4)]
+                        played_cards = []
 
                 elif msg_dict["header"] == "EXIT":
                     p = msg_dict["sender"]
@@ -223,12 +224,6 @@ async def websocket_endpoint(websocket: WebSocket):
                                 landlord_id.append(p)
                                 landlord_phase = False
                                 break
-                                
-
-                elif msg_dict["header"] == "FOUND_TEAMMATE":
-                    landlord_id.append(msg_dict["sender"])
-                    landlord_phase = False
-
 
                 elif msg_dict["header"] == "LOBBY":
                     for p in range(5):
