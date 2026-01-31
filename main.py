@@ -172,7 +172,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     played_cards = msg_dict["cards"]   
                     table_combo = msg_dict["combo"]
                     turn_id = skip_exited(turn_id)
-                    last_played_id = p
+                    last_play_id = p
                     for card in played_cards:
                         c_int = [int(val) for val in card]
                         
@@ -201,7 +201,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 elif msg_dict["header"] == "LANDLORD":
                     p = msg_dict["sender"]
                     landlord_id.append(p)
-                    last_played_id = p
+                    last_play_id = p
                     turn_id = msg_dict["sender"]
                     hands[p].extend(bottom_cards)
                     hands[p].sort(key=lambda c: c[0])
