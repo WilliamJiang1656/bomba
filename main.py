@@ -184,6 +184,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 elif msg_dict["header"] == "PASS":
                     turn_id = skip_exited(turn_id)
+                    if turn_id == last_play_id:
+                        table_combo = [0 for _ in range(4)]
 
                 elif msg_dict["header"] == "EXIT":
                     p = msg_dict["sender"]
