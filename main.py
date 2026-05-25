@@ -26,6 +26,7 @@ landlord_points = 0
 peasant_points = 0
 bottom_cards = []
 landlord_phase = False
+teammate_card = []
 start = False
 
 def skip_exited(val):
@@ -76,6 +77,7 @@ async def websocket_endpoint(websocket: WebSocket):
         rejoin_data["peasant_points"] = peasant_points
         rejoin_data["bottom_cards"] = bottom_cards
         rejoin_data["landlord_phase"] = landlord_phase
+        rejoin_data["teammate_card"] = teammate_card
 
         
         payload = (json.dumps(rejoin_data) + "\0").encode("utf-8")
@@ -121,6 +123,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         peasant_points = 0
                         #bottom_cards = [] set in start
                         landlord_phase = True
+                        teammate_card = []
                         
                         # make deck
                         deck = [] 
@@ -209,13 +212,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 elif msg_dict["header"] == "TEAMMATE":
                     found = False
+                    teammate_card = msg_dict["teammate"]
                     for p, hand in enumerate(hands):
                         if found:
                             break
                         elif p == msg_dict["sender"]:
                             continue
                         for card in hand[::-1]:
-                            if card == msg_dict["teammate"]:
+                            if card == teammate_card:
                                 found = True
                                 for seat in seats:
                                     teammate_packet = {"header": "FOUND_TEAMMATE", "sender": p}
