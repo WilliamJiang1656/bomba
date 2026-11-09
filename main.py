@@ -95,9 +95,14 @@ async def websocket_endpoint(websocket: WebSocket):
                 final_json = (json.dumps(msg_dict) + "\0").encode("utf-8")
                 
                 # broadcast to active sockets
-                for seat in seats:
+                for s_id, seat in enumerate(seats):
                     if seat["active"] and seat["socket"]:
-                        await seat["socket"].send_bytes(final_json)
+                        try:
+                            await seat["socket"].send_bytes(final_json)
+                        except (WebSocketDisconnect, RuntimeError):
+                            seat["active"] = False
+                            seat["socket"] = None
+                            print(f"Seat {s_id} connection lost during broadcast.")
 
                 if msg_dict["header"] == "READY":
                     seats[assigned_id]["ready"] = msg_dict["is_ready"] # True or False
@@ -160,14 +165,18 @@ async def websocket_endpoint(websocket: WebSocket):
                                 break
                         start_packet["flip_id"] = flip_id
                         turn_id = flip_id
-                        
+
                         
                         for p, seat in enumerate(seats):
                             if seat["active"] and seat["socket"]:
                                 hands[p].sort(key=lambda c: c[0])
                                 start_packet["hand"] = hands[p]
                                 start_payload = (json.dumps(start_packet) + "\0").encode("utf-8")
-                                await seat["socket"].send_bytes(start_payload)
+                                try:
+                                    await seat["socket"].send_bytes(start_payload)
+                                except (WebSocketDisconnect, RuntimeError):
+                                    seat["active"] = False
+                                    seat["socket"] = None
                         start = True
 
                 elif msg_dict["header"] == "PLAY_CARDS":
@@ -221,10 +230,15 @@ async def websocket_endpoint(websocket: WebSocket):
                         for card in hand[::-1]:
                             if card == teammate_card:
                                 found = True
-                                for seat in seats:
-                                    teammate_packet = {"header": "FOUND_TEAMMATE", "sender": p}
-                                    teammate_payload = (json.dumps(teammate_packet) + "\0").encode("utf-8")
-                                    await seat["socket"].send_bytes(teammate_payload)
+                                for s_id, seat in enumerate(seats):
+                                    if seat["active"] and seat["socket"]:
+                                        teammate_packet = {"header": "FOUND_TEAMMATE", "sender": p}
+                                        teammate_payload = (json.dumps(teammate_packet) + "\0").encode("utf-8")
+                                        try:
+                                            await seat["socket"].send_bytes(teammate_payload)
+                                        except (WebSocketDisconnect, RuntimeError):
+                                            seat["active"] = False
+                                            seat["socket"] = None
                                 landlord_id.append(p)
                                 landlord_phase = False
                                 break
