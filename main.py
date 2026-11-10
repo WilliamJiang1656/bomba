@@ -14,6 +14,7 @@ seats = [
     {"socket": None, "active": False, "ready": False}
 ]
 
+# server variables to keep track
 hands = [[] for _ in range(5)]
 hand_groups = [[] for _ in range(5)]
 landlord_id = []
@@ -27,6 +28,7 @@ peasant_points = 0
 bottom_cards = []
 landlord_phase = False
 teammate_card = []
+pfp = [None for _ in range(4)]
 start = False
 
 def skip_exited(val):
@@ -37,7 +39,7 @@ def skip_exited(val):
 
 @app.websocket("/")
 async def websocket_endpoint(websocket: WebSocket):
-    global hands, hand_groups, landlord_id, turn_id, last_play_id, played_cards, table_combo, exit_order, landlord_points, peasant_points, bottom_cards, landlord_phase, teammate_card, start
+    global hands, hand_groups, landlord_id, turn_id, last_play_id, played_cards, table_combo, exit_order, landlord_points, peasant_points, bottom_cards, landlord_phase, teammate_card, pfp, start
     
     await websocket.accept()
     
@@ -78,6 +80,7 @@ async def websocket_endpoint(websocket: WebSocket):
         rejoin_data["bottom_cards"] = bottom_cards
         rejoin_data["landlord_phase"] = landlord_phase
         rejoin_data["teammate_card"] = teammate_card
+        rejoin_data["pfp"] = pfp
 
         
         payload = (json.dumps(rejoin_data) + "\0").encode("utf-8")
@@ -211,11 +214,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     else:
                         peasant_points += (5-len(exit_order));
 
+                elif msg_dict["header"] == "PFP":
+                    p = msg_dict["sender"]
+                    pfp[p] = msg_dict["pfp"]
+
                 elif msg_dict["header"] == "LANDLORD":
                     p = msg_dict["sender"]
                     landlord_id.append(p)
                     last_play_id = p
-                    turn_id = msg_dict["sender"]
+                    turn_id = p
                     hands[p].extend(bottom_cards)
                     hands[p].sort(key=lambda c: c[0])
 
@@ -247,8 +254,6 @@ async def websocket_endpoint(websocket: WebSocket):
                     for p in range(5):
                         seats[p]["ready"] = False
                     start = False
-
-
 
                             
             except json.JSONDecodeError:
