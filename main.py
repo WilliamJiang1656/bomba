@@ -59,7 +59,7 @@ async def websocket_endpoint(websocket: WebSocket):
     print(f"Seat {assigned_id} taken.")
 
     # welcome data
-    welcome_data = {"header": "WELCOME", "assigned_id": assigned_id, "start": start}
+    welcome_data = {"header": "WELCOME", "assigned_id": assigned_id, "start": start, "pfp": pfp}
 
     payload = (json.dumps(welcome_data) + "\0").encode("utf-8")
     await websocket.send_bytes(payload)
@@ -80,7 +80,6 @@ async def websocket_endpoint(websocket: WebSocket):
         rejoin_data["bottom_cards"] = bottom_cards
         rejoin_data["landlord_phase"] = landlord_phase
         rejoin_data["teammate_card"] = teammate_card
-        rejoin_data["pfp"] = pfp
 
         
         payload = (json.dumps(rejoin_data) + "\0").encode("utf-8")
@@ -217,8 +216,6 @@ async def websocket_endpoint(websocket: WebSocket):
                 elif msg_dict["header"] == "PFP":
                     p = msg_dict["sender"]
                     pfp[p] = msg_dict["pfp"]
-                    print(str(p) + " Base: " + msg_dict["pfp"])
-                    print(pfp)
 
                 elif msg_dict["header"] == "LANDLORD":
                     p = msg_dict["sender"]
