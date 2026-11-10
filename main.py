@@ -28,7 +28,7 @@ peasant_points = 0
 bottom_cards = []
 landlord_phase = False
 teammate_card = []
-pfp = [None for _ in range(4)]
+pfp = [None for _ in range(5)]
 start = False
 
 def skip_exited(val):
