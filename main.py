@@ -217,6 +217,8 @@ async def websocket_endpoint(websocket: WebSocket):
                 elif msg_dict["header"] == "PFP":
                     p = msg_dict["sender"]
                     pfp[p] = msg_dict["pfp"]
+                    print(p + " Base: " + msg_dict["pfp"])
+                    print(pfp)
 
                 elif msg_dict["header"] == "LANDLORD":
                     p = msg_dict["sender"]
